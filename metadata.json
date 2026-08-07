@@ -1,0 +1,6 @@
+{
+  "name": "Vehicle Maintenance System",
+  "description": "Enterprise-grade Vehicle Maintenance System with support for Director Cars, Executive Fleet, Petroleum Tankers, and Commercial Transport Assets with Google Sheets API integration, maintenance tracking, fuel logs, and compliance management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
