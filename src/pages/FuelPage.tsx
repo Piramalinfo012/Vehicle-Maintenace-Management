@@ -4,14 +4,26 @@ import { Table, Column } from '../components/common/Table';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { Fuel, Plus, DollarSign, Gauge } from 'lucide-react';
+import {
+  formatToDDMMYYYY,
+  formatForDateInput,
+  formatFromDateInput,
+  getTodayDDMMYYYY,
+} from '../utils/dateUtils';
 
-export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
+import { syncToGoogleSheet } from '../services/googleSheetsSync';
+
+export const FuelPage: React.FC<{ tankers?: Tanker[]; fuelLogs?: FuelLog[]; setFuelLogs?: any }> = ({
+  tankers = [],
+  fuelLogs: propsFuelLogs,
+  setFuelLogs: propsSetFuelLogs,
+}) => {
   const { showToast } = useNotification();
 
-  const [fuelLogs, setFuelLogs] = useState<FuelLog[]>([
+  const [localFuelLogs, setLocalFuelLogs] = useState<FuelLog[]>([
     {
       id: 'FUEL-901',
-      date: '2026-08-06',
+      date: '06-08-2026',
       tankerNumber: 'MH-04-FK-1201',
       driverName: 'Mahesh Jadhav',
       litres: 350,
@@ -23,7 +35,7 @@ export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
     },
     {
       id: 'FUEL-902',
-      date: '2026-08-05',
+      date: '05-08-2026',
       tankerNumber: 'MH-12-PQ-4590',
       driverName: 'Santosh Deshmukh',
       litres: 280,
@@ -35,7 +47,7 @@ export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
     },
     {
       id: 'FUEL-903',
-      date: '2026-08-03',
+      date: '03-08-2026',
       tankerNumber: 'GJ-06-TR-8812',
       driverName: 'Vikram Singh',
       litres: 400,
@@ -49,7 +61,7 @@ export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLog, setNewLog] = useState<Partial<FuelLog>>({
-    date: new Date().toISOString().slice(0, 10),
+    date: getTodayDDMMYYYY(),
     tankerNumber: tankers[0]?.tankerNumber || 'MH-04-FK-1201',
     driverName: 'Mahesh Jadhav',
     litres: 300,
@@ -104,7 +116,7 @@ export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
     e.preventDefault();
     const entry: FuelLog = {
       id: `FUEL-${Date.now().toString().slice(-4)}`,
-      date: newLog.date || new Date().toISOString().slice(0, 10),
+      date: formatToDDMMYYYY(newLog.date || getTodayDDMMYYYY()),
       tankerNumber: newLog.tankerNumber || 'MH-04-FK-1201',
       driverName: newLog.driverName || 'Driver',
       litres: Number(newLog.litres || 0),
@@ -181,8 +193,8 @@ export const FuelPage: React.FC<{ tankers: Tanker[] }> = ({ tankers }) => {
               <input
                 type="date"
                 required
-                value={newLog.date}
-                onChange={(e) => setNewLog({ ...newLog, date: e.target.value })}
+                value={formatForDateInput(newLog.date)}
+                onChange={(e) => setNewLog({ ...newLog, date: formatFromDateInput(e.target.value) })}
                 className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
               />
             </div>

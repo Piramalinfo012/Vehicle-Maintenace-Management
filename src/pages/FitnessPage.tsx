@@ -5,8 +5,9 @@ import { Badge } from '../components/common/Badge';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
 import { FileCheck2, FileText } from 'lucide-react';
 
-export const FitnessPage: React.FC<{ fitness: ComplianceFitness[]; tankers: Tanker[] }> = ({
-  fitness,
+export const FitnessPage: React.FC<{ fitness?: ComplianceFitness[]; tankers?: Tanker[] }> = ({
+  fitness = [],
+  tankers = [],
 }) => {
   const [previewDoc, setPreviewDoc] = useState<{ title: string; url?: string } | null>(null);
 

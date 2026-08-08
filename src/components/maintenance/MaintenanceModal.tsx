@@ -2,6 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { MaintenanceRecord, Tanker, SparePartItem, MaintenanceType, MaintenanceStatus } from '../../types';
 import { Plus, Trash2, Calculator } from 'lucide-react';
+import {
+  formatToDDMMYYYY,
+  formatForDateInput,
+  formatFromDateInput,
+  getTodayDDMMYYYY,
+} from '../../utils/dateUtils';
 
 interface MaintenanceModalProps {
   isOpen: boolean;
@@ -19,7 +25,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
   initialData,
 }) => {
   const [formData, setFormData] = useState<Partial<MaintenanceRecord>>({
-    date: new Date().toISOString().slice(0, 10),
+    date: getTodayDDMMYYYY(),
     tankerNumber: tankers[0]?.tankerNumber || '',
     tankerId: tankers[0]?.id || '',
     currentKm: tankers[0]?.currentKm || 120000,
@@ -33,7 +39,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     materialCost: 0,
     otherCost: 500,
     totalCost: 4000,
-    expectedCompletion: new Date().toISOString().slice(0, 10),
+    expectedCompletion: getTodayDDMMYYYY(),
     status: 'Running',
     remarks: '',
   });
@@ -47,7 +53,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     } else {
       const defaultTanker = tankers[0] || { tankerNumber: 'MH-04-FK-1201', id: 'TNK-001', currentKm: 142000 };
       setFormData({
-        date: new Date().toISOString().slice(0, 10),
+        date: getTodayDDMMYYYY(),
         tankerNumber: defaultTanker.tankerNumber,
         tankerId: defaultTanker.id,
         currentKm: defaultTanker.currentKm,
@@ -60,7 +66,7 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
         materialCost: 8500,
         otherCost: 1000,
         totalCost: 14000,
-        expectedCompletion: new Date().toISOString().slice(0, 10),
+        expectedCompletion: getTodayDDMMYYYY(),
         status: 'Running',
         remarks: 'Tanker expected ready for dispatch by end of day.',
       });
@@ -118,6 +124,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
     e.preventDefault();
     onSave({
       ...formData,
+      date: formatToDDMMYYYY(formData.date),
+      expectedCompletion: formatToDDMMYYYY(formData.expectedCompletion),
       spareParts: parts,
     });
     onClose();
@@ -158,8 +166,8 @@ export const MaintenanceModal: React.FC<MaintenanceModalProps> = ({
             <input
               type="date"
               required
-              value={formData.date || ''}
-              onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+              value={formatForDateInput(formData.date)}
+              onChange={(e) => setFormData({ ...formData, date: formatFromDateInput(e.target.value) })}
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
             />
           </div>

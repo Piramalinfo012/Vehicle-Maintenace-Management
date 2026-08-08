@@ -5,23 +5,29 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { Battery, Plus } from 'lucide-react';
+import {
+  formatToDDMMYYYY,
+  formatForDateInput,
+  formatFromDateInput,
+  getTodayDDMMYYYY,
+} from '../utils/dateUtils';
 
-export const BatteryPage: React.FC<{ batteries: BatteryRecord[]; tankers: Tanker[] }> = ({
-  batteries: initialBatteries,
-  tankers,
+export const BatteryPage: React.FC<{ batteries?: BatteryRecord[]; tankers?: Tanker[] }> = ({
+  batteries: initialBatteries = [],
+  tankers = [],
 }) => {
   const { showToast } = useNotification();
-  const [batteryData, setBatteryData] = useState<BatteryRecord[]>(initialBatteries);
+  const [batteryData, setBatteryData] = useState<BatteryRecord[]>(initialBatteries || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<BatteryRecord>>({
     batteryNumber: `EXIDE-HD-${Math.floor(1000 + Math.random() * 9000)}`,
     brand: 'Exide Express Heavy',
     tankerNumber: tankers[0]?.tankerNumber || 'MH-04-FK-1201',
-    purchaseDate: new Date().toISOString().slice(0, 10),
+    purchaseDate: getTodayDDMMYYYY(),
     warrantyMonths: 36,
-    warrantyExpiry: '2027-08-01',
-    replacementDue: '2027-08-01',
+    warrantyExpiry: '01-08-2027',
+    replacementDue: '01-08-2027',
     status: 'Healthy',
   });
 
@@ -62,15 +68,16 @@ export const BatteryPage: React.FC<{ batteries: BatteryRecord[]; tankers: Tanker
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const formattedExpiry = formatToDDMMYYYY(formData.warrantyExpiry || '01-08-2027');
     const entry: BatteryRecord = {
       id: `BAT-${Date.now().toString().slice(-4)}`,
       batteryNumber: formData.batteryNumber || 'BAT-00',
       brand: formData.brand || 'Exide',
       tankerNumber: formData.tankerNumber || 'MH-04-FK-1201',
-      purchaseDate: formData.purchaseDate || new Date().toISOString().slice(0, 10),
+      purchaseDate: formatToDDMMYYYY(formData.purchaseDate || getTodayDDMMYYYY()),
       warrantyMonths: Number(formData.warrantyMonths || 36),
-      warrantyExpiry: formData.warrantyExpiry || '2027-08-01',
-      replacementDue: formData.replacementDue || '2027-08-01',
+      warrantyExpiry: formattedExpiry,
+      replacementDue: formatToDDMMYYYY(formData.replacementDue || formattedExpiry),
       status: formData.status as any,
     };
 
@@ -176,8 +183,8 @@ export const BatteryPage: React.FC<{ batteries: BatteryRecord[]; tankers: Tanker
               </label>
               <input
                 type="date"
-                value={formData.warrantyExpiry}
-                onChange={(e) => setFormData({ ...formData, warrantyExpiry: e.target.value })}
+                value={formatForDateInput(formData.warrantyExpiry)}
+                onChange={(e) => setFormData({ ...formData, warrantyExpiry: formatFromDateInput(e.target.value) })}
                 className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border rounded-lg"
               />
             </div>

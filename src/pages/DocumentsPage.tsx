@@ -4,19 +4,21 @@ import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal'
 import { FileText, Download, Eye, Search, Filter, Folder, ExternalLink } from 'lucide-react';
 
 interface DocumentsPageProps {
-  tankers: Tanker[];
-  insurances: ComplianceInsurance[];
-  fitness: ComplianceFitness[];
-  permits: CompliancePermit[];
-  pucs: CompliancePuc[];
+  tankers?: Tanker[];
+  insurances?: ComplianceInsurance[];
+  fitness?: ComplianceFitness[];
+  permits?: CompliancePermit[];
+  pucs?: CompliancePuc[];
+  documents?: any[];
+  setDocuments?: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
 export const DocumentsPage: React.FC<DocumentsPageProps> = ({
-  tankers,
-  insurances,
-  fitness,
-  permits,
-  pucs,
+  tankers = [],
+  insurances = [],
+  fitness = [],
+  permits = [],
+  pucs = [],
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedTanker, setSelectedTanker] = useState<string>('All');
@@ -25,15 +27,15 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
 
   // Consolidate all documents into a unified list
   const allDocs = [
-    ...tankers.map((t) => ({
+    ...(tankers || []).map((t) => ({
       id: `RC-${t.id}`,
       title: `Registration Certificate (RC) - ${t.tankerNumber}`,
       category: 'Registration Certificate (RC)',
       tankerNumber: t.tankerNumber,
-      expiryDate: '2030-12-31',
+      expiryDate: '31-12-2030',
       url: t.rcDocumentUrl,
     })),
-    ...insurances.map((i) => ({
+    ...(insurances || []).map((i) => ({
       id: `INS-${i.id}`,
       title: `Insurance Policy ${i.policyNumber}`,
       category: 'Insurance Policy',
@@ -41,7 +43,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       expiryDate: i.expiryDate,
       url: i.documentUrl,
     })),
-    ...fitness.map((f) => ({
+    ...(fitness || []).map((f) => ({
       id: `FIT-${f.id}`,
       title: `RTO Fitness Certificate ${f.certificateNumber}`,
       category: 'Fitness Certificate',
@@ -49,7 +51,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       expiryDate: f.expiryDate,
       url: f.documentUrl,
     })),
-    ...permits.map((p) => ({
+    ...(permits || []).map((p) => ({
       id: `PER-${p.id}`,
       title: `${p.permitType} ${p.permitNumber}`,
       category: 'National / Goods Permit',
@@ -57,7 +59,7 @@ export const DocumentsPage: React.FC<DocumentsPageProps> = ({
       expiryDate: p.expiryDate,
       url: p.documentUrl,
     })),
-    ...pucs.map((u) => ({
+    ...(pucs || []).map((u) => ({
       id: `PUC-${u.id}`,
       title: `PUC Emission Cert ${u.certificateNumber}`,
       category: 'PUC Pollution Certificate',

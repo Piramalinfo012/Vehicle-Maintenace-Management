@@ -5,8 +5,9 @@ import { Badge } from '../components/common/Badge';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
 import { FileBadge, FileText } from 'lucide-react';
 
-export const PermitPage: React.FC<{ permits: CompliancePermit[]; tankers: Tanker[] }> = ({
-  permits,
+export const PermitPage: React.FC<{ permits?: CompliancePermit[]; tankers?: Tanker[] }> = ({
+  permits = [],
+  tankers = [],
 }) => {
   const [previewDoc, setPreviewDoc] = useState<{ title: string; url?: string } | null>(null);
 

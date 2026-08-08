@@ -44,6 +44,7 @@ import {
   initialActivityLogs,
 } from './data/initialData';
 
+import { syncToGoogleSheet } from './services/googleSheetsSync';
 import {
   Tanker,
   MaintenanceRecord,
@@ -63,6 +64,7 @@ const MainLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
   const [currentView, setCurrentView] = useState<string>('Dashboard');
   const [collapsed, setCollapsed] = useState<boolean>(false);
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false);
   const [globalSearchQuery, setGlobalSearchQuery] = useState<string>('');
 
   // Master State Arrays
@@ -107,14 +109,17 @@ const MainLayout: React.FC = () => {
       updatedAt: new Date().toISOString().slice(0, 10),
     };
     setTankers([created, ...tankers]);
+    syncToGoogleSheet('create', 'Tankers', created);
   };
 
   const handleEditTanker = (updated: Tanker) => {
     setTankers(tankers.map((t) => (t.id === updated.id ? updated : t)));
+    syncToGoogleSheet('update', 'Tankers', updated);
   };
 
   const handleDeleteTanker = (id: string) => {
     setTankers(tankers.filter((t) => t.id !== id));
+    syncToGoogleSheet('delete', 'Tankers', { id });
   };
 
   // Handlers for Maintenance
@@ -142,6 +147,7 @@ const MainLayout: React.FC = () => {
       nextServiceDueKm: newRecord.nextServiceDueKm ? Number(newRecord.nextServiceDueKm) : undefined,
     };
     setMaintenance([created, ...maintenance]);
+    syncToGoogleSheet('create', 'Maintenance', created);
   };
 
   const handleUpdateVehicleService = (updatedVeh: {
@@ -155,7 +161,7 @@ const MainLayout: React.FC = () => {
     setTankers((prev) =>
       prev.map((t) => {
         if (t.tankerNumber === updatedVeh.tankerNumber) {
-          return {
+          const updated = {
             ...t,
             lastServiceDate: updatedVeh.lastServiceDate,
             lastServiceKm: updatedVeh.lastServiceKm,
@@ -163,6 +169,8 @@ const MainLayout: React.FC = () => {
             nextServiceDueKm: updatedVeh.nextServiceDueKm,
             currentKm: Math.max(t.currentKm, updatedVeh.currentKm),
           };
+          syncToGoogleSheet('update', 'Tankers', updated);
+          return updated;
         }
         return t;
       })
@@ -171,10 +179,12 @@ const MainLayout: React.FC = () => {
 
   const handleEditMaintenance = (updated: MaintenanceRecord) => {
     setMaintenance(maintenance.map((m) => (m.id === updated.id ? updated : m)));
+    syncToGoogleSheet('update', 'Maintenance', updated);
   };
 
   const handleDeleteMaintenance = (id: string) => {
     setMaintenance(maintenance.filter((m) => m.id !== id));
+    syncToGoogleSheet('delete', 'Maintenance', { id });
   };
 
   // Reminders Generation
@@ -209,6 +219,8 @@ const MainLayout: React.FC = () => {
         onNavigate={setCurrentView}
         collapsed={collapsed}
         setCollapsed={setCollapsed}
+        mobileOpen={mobileOpen}
+        setMobileOpen={setMobileOpen}
         breakdownCount={breakdowns.filter((b) => b.status !== 'Resolved').length}
         maintenanceCount={maintenance.filter((m) => m.status === 'Running').length}
         reminderCount={reminders.length}
@@ -220,6 +232,7 @@ const MainLayout: React.FC = () => {
           globalSearchQuery={globalSearchQuery}
           setGlobalSearchQuery={setGlobalSearchQuery}
           onNavigate={setCurrentView}
+          onToggleMobileMenu={() => setMobileOpen(!mobileOpen)}
         />
 
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-800">
@@ -276,7 +289,13 @@ const MainLayout: React.FC = () => {
           {currentView === 'PUC' && <PucPage pucs={pucs} tankers={tankers} />}
 
           {currentView === 'Documents' && (
-            <DocumentsPage documents={documents} tankers={tankers} setDocuments={setDocuments} />
+            <DocumentsPage
+              tankers={tankers}
+              insurances={insurances}
+              fitness={fitness}
+              permits={permits}
+              pucs={pucs}
+            />
           )}
 
           {currentView === 'Service History' && (
@@ -294,7 +313,10 @@ const MainLayout: React.FC = () => {
             <BreakdownPage
               breakdowns={breakdowns}
               tankers={tankers}
-              onReportBreakdown={(rec) => setBreakdowns([rec as BreakdownRecord, ...breakdowns])}
+              onReportBreakdown={(rec) => {
+                setBreakdowns([rec as BreakdownRecord, ...breakdowns]);
+                syncToGoogleSheet('create', 'Breakdown', rec);
+              }}
             />
           )}
 

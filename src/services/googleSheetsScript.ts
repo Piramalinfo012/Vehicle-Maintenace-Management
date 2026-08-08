@@ -20,7 +20,7 @@ export function generateGoogleAppsScriptCode(): string {
 var SPREADSHEET = SpreadsheetApp.getActiveSpreadsheet();
 
 var SHEET_NAMES = [
-  "Users", "Tankers", "Maintenance", "Tyres", "Battery",
+  "Users", "Tankers", "Maintenance", "Fuel", "Tyres", "Battery",
   "Insurance", "Fitness", "Permit", "PUC", "Expenses",
   "Breakdown", "Documents", "Notifications", "Settings"
 ];
@@ -40,10 +40,16 @@ function setupDatabaseSheets() {
   initSheetHeaders("Tankers", ["id", "tankerNumber", "registrationNumber", "vehicleType", "capacity", "manufacturer", "model", "engineNumber", "chassisNumber", "purchaseDate", "purchaseCost", "owner", "driver", "transporter", "currentKm", "status", "location", "remarks", "updatedAt"]);
   // Populate Maintenance header
   initSheetHeaders("Maintenance", ["id", "date", "tankerId", "tankerNumber", "currentKm", "type", "vendor", "workshop", "complaint", "workDescription", "labourCost", "materialCost", "otherCost", "totalCost", "expectedCompletion", "actualCompletion", "status", "remarks"]);
+  // Populate Fuel header
+  initSheetHeaders("Fuel", ["id", "date", "tankerNumber", "driverName", "litres", "ratePerLitre", "totalCost", "odometerReading", "fuelPumpLocation"]);
+  // Populate Tyres header
+  initSheetHeaders("Tyres", ["id", "tyreNumber", "brand", "purchaseDate", "purchaseCost", "installedPosition", "currentPosition", "tankerNumber", "kmRun", "condition", "status"]);
+  // Populate Battery header
+  initSheetHeaders("Battery", ["id", "batteryNumber", "brand", "tankerNumber", "purchaseDate", "warrantyMonths", "warrantyExpiry", "replacementDue", "status"]);
   // Populate Expenses header
   initSheetHeaders("Expenses", ["id", "date", "tankerNumber", "category", "amount", "vendor", "invoiceNumber", "description", "paidBy"]);
   // Populate Breakdown header
-  initSheetHeaders("Breakdown", ["id", "date", "tankerNumber", "location", "driverName", "complaint", "status", "assignedMechanic", "estimatedCost", "finalCost", "resolvedDate", "remarks"]);
+  initSheetHeaders("Breakdown", ["id", "date", "breakdownDate", "tankerNumber", "driverName", "driverPhone", "location", "issueCategory", "description", "assignedVendor", "estimatedCost", "status", "resolvedDate"]);
   
   Logger.log("Database sheets initialized successfully!");
 }

@@ -5,19 +5,25 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { Disc, Plus } from 'lucide-react';
+import {
+  formatToDDMMYYYY,
+  formatForDateInput,
+  formatFromDateInput,
+  getTodayDDMMYYYY,
+} from '../utils/dateUtils';
 
-export const TyresPage: React.FC<{ tyres: TyreRecord[]; tankers: Tanker[] }> = ({
-  tyres: initialTyres,
-  tankers,
+export const TyresPage: React.FC<{ tyres?: TyreRecord[]; tankers?: Tanker[] }> = ({
+  tyres: initialTyres = [],
+  tankers = [],
 }) => {
   const { showToast } = useNotification();
-  const [tyresData, setTyresData] = useState<TyreRecord[]>(initialTyres);
+  const [tyresData, setTyresData] = useState<TyreRecord[]>(initialTyres || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<TyreRecord>>({
     tyreNumber: `MRF-RAD-${Math.floor(10000 + Math.random() * 90000)}`,
     brand: 'MRF Super Lug',
-    purchaseDate: new Date().toISOString().slice(0, 10),
+    purchaseDate: getTodayDDMMYYYY(),
     purchaseCost: 28000,
     installedPosition: 'Front Left',
     currentPosition: 'Front Left',
@@ -75,7 +81,7 @@ export const TyresPage: React.FC<{ tyres: TyreRecord[]; tankers: Tanker[] }> = (
       id: `TYR-${Date.now().toString().slice(-4)}`,
       tyreNumber: formData.tyreNumber || 'TYR-00',
       brand: formData.brand || 'MRF',
-      purchaseDate: formData.purchaseDate || new Date().toISOString().slice(0, 10),
+      purchaseDate: formatToDDMMYYYY(formData.purchaseDate || getTodayDDMMYYYY()),
       purchaseCost: Number(formData.purchaseCost || 0),
       installedPosition: formData.installedPosition as any,
       currentPosition: formData.installedPosition || 'Front Left',

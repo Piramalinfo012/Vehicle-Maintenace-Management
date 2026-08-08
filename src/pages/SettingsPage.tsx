@@ -11,7 +11,7 @@ export const SettingsPage: React.FC = () => {
   const [currencySymbol, setCurrencySymbol] = useState('₹ (INR)');
   const [autoReminderDays, setAutoReminderDays] = useState('15');
   const [googleSheetAppUrl, setGoogleSheetAppUrl] = useState(
-    'https://script.google.com/macros/s/AKfycbx_Piramal_Tanker_Maintenance_v2_API/exec'
+    'https://script.google.com/macros/s/AKfycbyhQ4Y-KRCjRUcGv-7TfhTZeh6YimY0RTLnUS-H89jZyRP9gOyNuoPka38kw3uOarLr/exec'
   );
 
   const handleSave = (e: React.FormEvent) => {

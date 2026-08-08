@@ -57,22 +57,27 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({
   return (
     <div className="space-y-6">
       {/* Title Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/60 dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 backdrop-blur-md shadow-xs">
         <div>
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
-            Fleet Executive Dashboard
-          </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            Real-time tanker maintenance, compliance, expenditure, and operational telematics
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white tracking-tight font-display">
+              Fleet Executive Dashboard
+            </h2>
+            <span className="px-2.5 py-0.5 text-[10px] font-extrabold uppercase rounded-full bg-emerald-100 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-400 border border-emerald-200/60 dark:border-emerald-800/60">
+              Live Systems
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-medium">
+            Real-time director fleet, tanker maintenance, compliance, expenditure, and operational status
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <button
             onClick={onOpenCreateMaintenance}
-            className="px-3.5 py-2 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-blue-800 rounded-xl shadow-sm transition-all"
+            className="px-4 py-2.5 text-xs font-bold text-white premium-gradient-btn rounded-xl shadow-md transition-all flex items-center gap-1.5"
           >
-            + Create Maintenance Ticket
+            <span>+</span> Create Maintenance Ticket
           </button>
         </div>
       </div>

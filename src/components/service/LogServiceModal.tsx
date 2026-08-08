@@ -2,6 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Tanker, MaintenanceRecord } from '../../types';
 import { Wrench, Calendar, Gauge, DollarSign, Building2, CheckCircle } from 'lucide-react';
+import {
+  formatToDDMMYYYY,
+  formatForDateInput,
+  formatFromDateInput,
+  getTodayDDMMYYYY,
+  addMonthsToDDMMYYYY,
+} from '../../utils/dateUtils';
 
 interface LogServiceModalProps {
   isOpen: boolean;
@@ -28,7 +35,7 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
   const selectedVehicle = tankers.find((t) => t.tankerNumber === defaultTankerNumber) || tankers[0];
 
   const [tankerNumber, setTankerNumber] = useState<string>(selectedVehicle?.tankerNumber || '');
-  const [serviceDate, setServiceDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [serviceDate, setServiceDate] = useState<string>(getTodayDDMMYYYY());
   const [currentKm, setCurrentKm] = useState<number>(selectedVehicle?.currentKm || 25000);
   const [serviceType, setServiceType] = useState<string>('Preventive');
   const [vendor, setVendor] = useState<string>('Official Authorized Workshop');
@@ -55,7 +62,6 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
   }, [serviceDate, currentKm, intervalOption]);
 
   const calculateNextSchedule = (sDate: string, km: number, option: string) => {
-    const baseDate = new Date(sDate || new Date());
     let monthsToAdd = 6;
     let kmToAdd = 10000;
 
@@ -71,8 +77,7 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
     }
 
     if (option !== 'custom') {
-      baseDate.setMonth(baseDate.getMonth() + monthsToAdd);
-      setNextDueDate(baseDate.toISOString().slice(0, 10));
+      setNextDueDate(addMonthsToDDMMYYYY(sDate, monthsToAdd));
       setNextDueKm(Number(km) + kmToAdd);
     }
   };
@@ -82,8 +87,11 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
     const veh = tankers.find((t) => t.tankerNumber === tankerNumber) || selectedVehicle;
     if (!veh) return;
 
+    const formattedServiceDate = formatToDDMMYYYY(serviceDate);
+    const formattedNextDueDate = formatToDDMMYYYY(nextDueDate);
+
     const maintenanceRecord: Partial<MaintenanceRecord> = {
-      date: serviceDate,
+      date: formattedServiceDate,
       tankerId: veh.id,
       tankerNumber: veh.tankerNumber,
       currentKm: Number(currentKm),
@@ -96,19 +104,19 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
       labourCost: Math.round(Number(totalCost) * 0.3),
       materialCost: Math.round(Number(totalCost) * 0.7),
       otherCost: 0,
-      expectedCompletion: serviceDate,
-      actualCompletion: serviceDate,
+      expectedCompletion: formattedServiceDate,
+      actualCompletion: formattedServiceDate,
       status: 'Completed',
-      remarks: `Next Service due on ${nextDueDate} or at ${nextDueKm?.toLocaleString()} KM.`,
-      nextServiceDueDate: nextDueDate,
+      remarks: `Next Service due on ${formattedNextDueDate} or at ${nextDueKm?.toLocaleString()} KM.`,
+      nextServiceDueDate: formattedNextDueDate,
       nextServiceDueKm: Number(nextDueKm),
     };
 
     onSaveService(maintenanceRecord, {
       tankerNumber: veh.tankerNumber,
-      lastServiceDate: serviceDate,
+      lastServiceDate: formattedServiceDate,
       lastServiceKm: Number(currentKm),
-      nextServiceDueDate: nextDueDate,
+      nextServiceDueDate: formattedNextDueDate,
       nextServiceDueKm: Number(nextDueKm),
       currentKm: Math.max(veh.currentKm, Number(currentKm)),
     });
@@ -152,8 +160,8 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
             </label>
             <input
               type="date"
-              value={serviceDate}
-              onChange={(e) => setServiceDate(e.target.value)}
+              value={formatForDateInput(serviceDate)}
+              onChange={(e) => setServiceDate(formatFromDateInput(e.target.value))}
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
               required
             />
@@ -312,10 +320,10 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
               </label>
               <input
                 type="date"
-                value={nextDueDate}
+                value={formatForDateInput(nextDueDate)}
                 onChange={(e) => {
                   setIntervalOption('custom');
-                  setNextDueDate(e.target.value);
+                  setNextDueDate(formatFromDateInput(e.target.value));
                 }}
                 className="w-full px-3 py-1.5 text-xs font-semibold bg-white dark:bg-slate-900 border border-blue-300 dark:border-blue-800 rounded-lg text-slate-900 dark:text-white"
                 required

@@ -205,7 +205,7 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
               setEditingTanker(null);
               setIsModalOpen(true);
             }}
-            className="px-4 py-2 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-blue-800 rounded-xl shadow-sm transition-all flex items-center gap-1.5"
+            className="px-4 py-2 text-xs font-bold text-white premium-gradient-btn rounded-xl shadow-md transition-all flex items-center gap-1.5"
           >
             <span>+</span> Add New Vehicle / Car
           </button>
@@ -225,22 +225,23 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
           {filteredTankers.map((tanker) => (
             <div
               key={tanker.id}
-              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col group"
+              className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-xs hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group hover:-translate-y-1"
             >
               {/* Photo Banner */}
-              <div className="h-44 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
+              <div className="h-48 bg-slate-100 dark:bg-slate-800 relative overflow-hidden">
                 <img
                   src={
                     tanker.photoUrl ||
                     'https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&q=80&w=800'
                   }
                   alt={tanker.tankerNumber}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-black/20" />
                 <div className="absolute top-3 left-3">
                   <Badge status={tanker.status} size="md" />
                 </div>
-                <div className="absolute bottom-3 right-3 px-2.5 py-1 rounded-lg bg-slate-950/80 text-white text-xs font-mono font-bold backdrop-blur-md">
+                <div className="absolute bottom-3 right-3 px-3 py-1 rounded-xl bg-slate-950/80 text-white text-xs font-mono font-bold backdrop-blur-md border border-white/10 shadow-lg">
                   {tanker.capacity}
                 </div>
               </div>
@@ -255,12 +256,12 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
                       </h3>
                       <p className="text-xs text-slate-500 font-mono">{tanker.registrationNumber}</p>
                     </div>
-                    <span className="px-2 py-0.5 rounded bg-indigo-50 dark:bg-indigo-950 text-[#1E3A8A] dark:text-indigo-300 text-[10px] font-bold">
+                    <span className="px-2.5 py-1 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-700 dark:text-blue-300 text-[10px] font-bold border border-blue-200/60 dark:border-blue-800/60">
                       {tanker.vehicleType}
                     </span>
                   </div>
 
-                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs border-t border-b border-slate-100 dark:border-slate-800 py-3">
+                  <div className="mt-4 grid grid-cols-2 gap-3 text-xs border-t border-b border-slate-100 dark:border-slate-800/80 py-3">
                     <div>
                       <span className="text-slate-400 text-[10px] uppercase font-bold block">Manufacturer</span>
                       <span className="font-semibold text-slate-800 dark:text-slate-200">{tanker.manufacturer}</span>

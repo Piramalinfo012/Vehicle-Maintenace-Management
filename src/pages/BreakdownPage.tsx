@@ -5,27 +5,28 @@ import { Badge } from '../components/common/Badge';
 import { Modal } from '../components/common/Modal';
 import { useNotification } from '../context/NotificationContext';
 import { AlertTriangle, Plus, PhoneCall, MapPin, Wrench } from 'lucide-react';
+import { formatToDDMMYYYY, getTodayDDMMYYYY } from '../utils/dateUtils';
 
 interface BreakdownPageProps {
-  breakdowns: BreakdownRecord[];
-  tankers: Tanker[];
-  onReportBreakdown: (record: Partial<BreakdownRecord>) => void;
+  breakdowns?: BreakdownRecord[];
+  tankers?: Tanker[];
+  onReportBreakdown?: (record: Partial<BreakdownRecord>) => void;
 }
 
 export const BreakdownPage: React.FC<BreakdownPageProps> = ({
-  breakdowns: initialBreakdowns,
-  tankers,
+  breakdowns: initialBreakdowns = [],
+  tankers = [],
   onReportBreakdown,
 }) => {
   const { showToast } = useNotification();
-  const [breakdownList, setBreakdownList] = useState<BreakdownRecord[]>(initialBreakdowns);
+  const [breakdownList, setBreakdownList] = useState<BreakdownRecord[]>(initialBreakdowns || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<BreakdownRecord>>({
     tankerNumber: tankers[0]?.tankerNumber || 'MH-04-FK-1201',
     driverName: 'Ramesh Pawar',
     driverPhone: '+91 98201 44510',
-    breakdownDate: new Date().toISOString().slice(0, 10) + ' 14:30',
+    breakdownDate: getTodayDDMMYYYY() + ' 14:30',
     location: 'NH-48 Highway, near Manor Toll Plaza',
     issueCategory: 'Engine Overheating & Coolant Leak',
     description: 'Engine temperature indicator turned red, high pressure steam from radiator cap.',
@@ -85,10 +86,11 @@ export const BreakdownPage: React.FC<BreakdownPageProps> = ({
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
+    const formattedDate = formatToDDMMYYYY(formData.breakdownDate || getTodayDDMMYYYY());
     const incident: BreakdownRecord = {
       id: `BDK-${Date.now().toString().slice(-4)}`,
-      date: formData.breakdownDate || new Date().toISOString().slice(0, 10),
-      breakdownDate: formData.breakdownDate || new Date().toISOString().slice(0, 10),
+      date: formattedDate,
+      breakdownDate: formData.breakdownDate || formattedDate,
       tankerNumber: formData.tankerNumber || 'MH-04-FK-1201',
       driverName: formData.driverName || 'Driver',
       driverPhone: formData.driverPhone || '+91 98000 00000',

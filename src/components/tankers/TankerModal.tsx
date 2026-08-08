@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Tanker, TankerStatus } from '../../types';
+import { formatToDDMMYYYY, getTodayDDMMYYYY } from '../../utils/dateUtils';
 
 interface TankerModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ export const TankerModal: React.FC<TankerModalProps> = ({
     model: '',
     engineNumber: '',
     chassisNumber: '',
-    purchaseDate: new Date().toISOString().slice(0, 10),
+    purchaseDate: getTodayDDMMYYYY(),
     purchaseCost: 4000000,
     owner: 'Piramal Petroleum Fleet Ops',
     driver: '',
@@ -48,7 +49,7 @@ export const TankerModal: React.FC<TankerModalProps> = ({
         model: '2823R 6x2',
         engineNumber: `ENG-BB-${Math.floor(100000 + Math.random() * 900000)}`,
         chassisNumber: `CHS-BB-${Math.floor(100000 + Math.random() * 900000)}`,
-        purchaseDate: '2023-01-15',
+        purchaseDate: '15-01-2023',
         purchaseCost: 4200000,
         owner: 'Piramal Petroleum Fleet Ops',
         driver: 'Ramesh Pawar',
@@ -63,7 +64,10 @@ export const TankerModal: React.FC<TankerModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    onSave({
+      ...formData,
+      purchaseDate: formatToDDMMYYYY(formData.purchaseDate),
+    });
     onClose();
   };
 

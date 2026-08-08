@@ -5,8 +5,9 @@ import { Badge } from '../components/common/Badge';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
 import { Leaf, FileText } from 'lucide-react';
 
-export const PucPage: React.FC<{ pucs: CompliancePuc[]; tankers: Tanker[] }> = ({
-  pucs,
+export const PucPage: React.FC<{ pucs?: CompliancePuc[]; tankers?: Tanker[] }> = ({
+  pucs = [],
+  tankers = [],
 }) => {
   const [previewDoc, setPreviewDoc] = useState<{ title: string; url?: string } | null>(null);
 

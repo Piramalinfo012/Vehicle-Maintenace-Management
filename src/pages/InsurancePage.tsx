@@ -5,8 +5,9 @@ import { Badge } from '../components/common/Badge';
 import { DocumentPreviewModal } from '../components/common/DocumentPreviewModal';
 import { ShieldCheck, FileText, Download } from 'lucide-react';
 
-export const InsurancePage: React.FC<{ insurances: ComplianceInsurance[]; tankers: Tanker[] }> = ({
-  insurances,
+export const InsurancePage: React.FC<{ insurances?: ComplianceInsurance[]; tankers?: Tanker[] }> = ({
+  insurances = [],
+  tankers = [],
 }) => {
   const [previewDoc, setPreviewDoc] = useState<{ title: string; url?: string } | null>(null);
 

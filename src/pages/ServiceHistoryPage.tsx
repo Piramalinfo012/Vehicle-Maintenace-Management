@@ -300,35 +300,35 @@ export const ServiceHistoryPage: React.FC<ServiceHistoryPageProps> = ({
       </div>
 
       {/* Tabs & Controls Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white dark:bg-slate-900 p-3 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
         {/* Navigation Tabs */}
-        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+        <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl overflow-x-auto w-full lg:w-auto scrollbar-none">
           <button
             onClick={() => setActiveTab('schedule')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'schedule'
                 ? 'bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-300 shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
-            <Car className="w-4 h-4 text-blue-600" />
-            <span>🚗 Vehicle Service Status & Next Schedule</span>
+            <Car className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Vehicle Service Status</span>
           </button>
           <button
             onClick={() => setActiveTab('logs')}
-            className={`px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 ${
+            className={`px-3 sm:px-4 py-2 text-xs font-bold rounded-lg transition-all flex items-center gap-2 whitespace-nowrap shrink-0 ${
               activeTab === 'logs'
                 ? 'bg-white dark:bg-slate-900 text-blue-900 dark:text-blue-300 shadow-sm'
                 : 'text-slate-600 dark:text-slate-400 hover:text-slate-900'
             }`}
           >
-            <History className="w-4 h-4 text-purple-600" />
-            <span>📋 Historical Service Logs ({maintenance.length})</span>
+            <History className="w-4 h-4 text-purple-600 shrink-0" />
+            <span>Service Logs ({maintenance.length})</span>
           </button>
         </div>
 
         {/* Filter and Search Bar */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
           <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input

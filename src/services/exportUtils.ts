@@ -1,6 +1,7 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
+import { getTodayDDMMYYYY } from '../utils/dateUtils';
 
 export function exportToExcel<T extends Record<string, any>>(
   data: T[],
@@ -9,7 +10,7 @@ export function exportToExcel<T extends Record<string, any>>(
   const worksheet = XLSX.utils.json_to_sheet(data);
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Data');
-  XLSX.writeFile(workbook, `${fileName}_${new Date().toISOString().slice(0, 10)}.xlsx`);
+  XLSX.writeFile(workbook, `${fileName}_${getTodayDDMMYYYY()}.xlsx`);
 }
 
 export function exportToPdf(
@@ -31,7 +32,7 @@ export function exportToPdf(
 
   doc.setFontSize(9);
   doc.setTextColor(100, 116, 139);
-  doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 32);
+  doc.text(`Generated on: ${getTodayDDMMYYYY()} ${new Date().toLocaleTimeString('en-IN')}`, 14, 32);
 
   // Table
   autoTable(doc, {
@@ -53,7 +54,7 @@ export function exportToPdf(
     },
   });
 
-  doc.save(`${fileName}_${new Date().toISOString().slice(0, 10)}.pdf`);
+  doc.save(`${fileName}_${getTodayDDMMYYYY()}.pdf`);
 }
 
 export function printTable(title: string, tableId: string) {
@@ -82,7 +83,7 @@ export function printTable(title: string, tableId: string) {
       </head>
       <body>
         <h1>Piramal Petroleum - ${title}</h1>
-        <p>Generated on ${new Date().toLocaleString()}</p>
+        <p>Generated on ${getTodayDDMMYYYY()} ${new Date().toLocaleTimeString('en-IN')}</p>
         ${elem.outerHTML}
         <script>
           window.onload = function() { window.print(); window.close(); }
