@@ -395,8 +395,12 @@ const MainLayout: React.FC = () => {
                 <TankerMasterPage
                   tankers={tankers}
                   onAddTanker={handleAddTanker}
-                  onEditTanker={handleEditTanker}
+                  onUpdateTanker={(id, data) => {
+                    const existing = tankers.find((t) => t.id === id);
+                    if (existing) handleEditTanker({ ...existing, ...data });
+                  }}
                   onDeleteTanker={handleDeleteTanker}
+                  onViewServiceHistory={(tankerNumber) => setCurrentView('Service History')}
                 />
               )}
 

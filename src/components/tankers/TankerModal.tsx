@@ -370,7 +370,7 @@ export const TankerModal: React.FC<TankerModalProps> = ({
             type="submit"
             className="px-5 py-2 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-blue-800 rounded-lg shadow-sm"
           >
-            Save Tanker Asset
+            Save
           </button>
         </div>
       </form>

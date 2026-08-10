@@ -62,8 +62,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'Reminders', label: 'Reminders & Alerts', icon: Bell, badge: reminderCount },
     { id: 'Reports', label: 'Reports & Analytics', icon: BarChart3 },
     { id: 'Users', label: 'Users & Roles', icon: Users },
-    { id: 'Settings', label: 'System Settings', icon: Settings },
-    { id: 'Google Apps Script', label: 'Google Sheets API', icon: Code2 },
   ];
 
   const handleNavClick = (id: string) => {
