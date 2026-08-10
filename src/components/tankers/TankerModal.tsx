@@ -2,6 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Tanker, TankerStatus } from '../../types';
 import { formatToDDMMYYYY, getTodayDDMMYYYY } from '../../utils/dateUtils';
+import { getGoogleSheetsUrl } from '../../services/googleSheetsSync';
+
+// Google Drive folder where vehicle photos are uploaded via the Apps
+// Script's uploadFile action (same folder used for service bill uploads).
+const PHOTO_UPLOAD_FOLDER_ID = '1l4vqGTOsjefmSOjoLUubk0d-RyNRF4ez';
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split('base64,')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 interface TankerModalProps {
   isOpen: boolean;
@@ -35,6 +49,7 @@ export const TankerModal: React.FC<TankerModalProps> = ({
     location: 'Mumbai Terminal Depot',
     remarks: '',
   });
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -279,20 +294,40 @@ export const TankerModal: React.FC<TankerModalProps> = ({
 
             <div className="flex-1 space-y-2 w-full">
               <div className="flex items-center gap-2">
-                <label className="px-3 py-1.5 bg-[#1E3A8A] text-white text-xs font-semibold rounded-lg hover:bg-blue-800 cursor-pointer transition-all inline-flex items-center gap-1.5 shadow-sm">
-                  <span>📁 Upload Image File</span>
+                <label className={`px-3 py-1.5 bg-[#1E3A8A] text-white text-xs font-semibold rounded-lg hover:bg-blue-800 cursor-pointer transition-all inline-flex items-center gap-1.5 shadow-sm ${isUploadingPhoto ? 'opacity-60 pointer-events-none' : ''}`}>
+                  <span>{isUploadingPhoto ? '⏳ Uploading...' : '📁 Upload Image File'}</span>
                   <input
                     type="file"
                     accept="image/*"
                     className="hidden"
-                    onChange={(e) => {
+                    disabled={isUploadingPhoto}
+                    onChange={async (e) => {
                       const file = e.target.files?.[0];
-                      if (file) {
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setFormData({ ...formData, photoUrl: reader.result as string });
-                        };
-                        reader.readAsDataURL(file);
+                      if (!file) return;
+
+                      setIsUploadingPhoto(true);
+                      try {
+                        const base64Data = await fileToBase64(file);
+                        const res = await fetch(getGoogleSheetsUrl(), {
+                          method: 'POST',
+                          body: new URLSearchParams({
+                            action: 'uploadFile',
+                            base64Data,
+                            fileName: file.name,
+                            mimeType: file.type || 'application/octet-stream',
+                            folderId: PHOTO_UPLOAD_FOLDER_ID,
+                          }),
+                        });
+                        const result = await res.json();
+                        if (result.success) {
+                          setFormData((prev) => ({ ...prev, photoUrl: result.fileUrl }));
+                        } else {
+                          console.error('Failed to upload vehicle photo:', result.error);
+                        }
+                      } catch (err) {
+                        console.error('Failed to upload vehicle photo:', err);
+                      } finally {
+                        setIsUploadingPhoto(false);
                       }
                     }}
                   />

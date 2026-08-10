@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Settings, Save, ShieldCheck, Database, Bell, Lock, RefreshCw } from 'lucide-react';
 import { useNotification } from '../context/NotificationContext';
 import { useTheme } from '../context/ThemeContext';
+import { getGoogleSheetsUrl, setGoogleSheetsUrl } from '../services/googleSheetsSync';
 
 export const SettingsPage: React.FC = () => {
   const { showToast } = useNotification();
@@ -10,13 +11,12 @@ export const SettingsPage: React.FC = () => {
   const [companyName, setCompanyName] = useState('Piramal Petroleum Logistics Pvt. Ltd.');
   const [currencySymbol, setCurrencySymbol] = useState('₹ (INR)');
   const [autoReminderDays, setAutoReminderDays] = useState('15');
-  const [googleSheetAppUrl, setGoogleSheetAppUrl] = useState(
-    'https://script.google.com/macros/s/AKfycbyhQ4Y-KRCjRUcGv-7TfhTZeh6YimY0RTLnUS-H89jZyRP9gOyNuoPka38kw3uOarLr/exec'
-  );
+  const [googleSheetAppUrl, setGoogleSheetAppUrlInput] = useState(getGoogleSheetsUrl());
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    showToast('Settings Persisted', 'System configuration and preferences saved successfully', 'success');
+    setGoogleSheetsUrl(googleSheetAppUrl);
+    showToast('Settings Persisted', 'Google Sheet endpoint saved. Reload the app to fetch from the new sheet.', 'success');
   };
 
   return (
@@ -77,7 +77,7 @@ export const SettingsPage: React.FC = () => {
             <input
               type="text"
               value={googleSheetAppUrl}
-              onChange={(e) => setGoogleSheetAppUrl(e.target.value)}
+              onChange={(e) => setGoogleSheetAppUrlInput(e.target.value)}
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border rounded-xl font-mono text-slate-800 dark:text-slate-200"
             />
             <p className="text-[11px] text-slate-500 mt-1">

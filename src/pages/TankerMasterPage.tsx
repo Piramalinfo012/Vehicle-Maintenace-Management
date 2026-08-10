@@ -36,7 +36,8 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
   onDeleteTanker,
   onViewServiceHistory,
 }) => {
-  const { hasPermission } = useAuth();
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'Admin';
   const { showToast } = useNotification();
 
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('grid');
@@ -114,16 +115,18 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
       header: 'Actions',
       accessor: (row) => (
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => {
-              setEditingTanker(row);
-              setIsModalOpen(true);
-            }}
-            className="p-1.5 text-slate-600 hover:text-blue-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
-            title="Edit Asset Details"
-          >
-            <Edit2 className="w-3.5 h-3.5" />
-          </button>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setEditingTanker(row);
+                setIsModalOpen(true);
+              }}
+              className="p-1.5 text-slate-600 hover:text-blue-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              title="Edit Asset Details"
+            >
+              <Edit2 className="w-3.5 h-3.5" />
+            </button>
+          )}
 
           <button
             onClick={() => onViewServiceHistory(row.tankerNumber)}
@@ -133,7 +136,7 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
             <Eye className="w-3.5 h-3.5" />
           </button>
 
-          {hasPermission('canManageTankers') && (
+          {isAdmin && (
             <button
               onClick={() => setDeletingId(row.id)}
               className="p-1.5 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg"
@@ -315,17 +318,19 @@ export const TankerMasterPage: React.FC<TankerMasterPageProps> = ({
                   </div>
 
                   <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => {
-                        setEditingTanker(tanker);
-                        setIsModalOpen(true);
-                      }}
-                      className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
+                    {isAdmin && (
+                      <button
+                        onClick={() => {
+                          setEditingTanker(tanker);
+                          setIsModalOpen(true);
+                        }}
+                        className="p-1.5 rounded-lg text-slate-600 hover:text-blue-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
 
-                    {hasPermission('canManageTankers') && (
+                    {isAdmin && (
                       <button
                         onClick={() => setDeletingId(tanker.id)}
                         className="p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50"

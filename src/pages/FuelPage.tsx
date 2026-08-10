@@ -11,53 +11,12 @@ import {
   getTodayDDMMYYYY,
 } from '../utils/dateUtils';
 
-import { syncToGoogleSheet } from '../services/googleSheetsSync';
-
-export const FuelPage: React.FC<{ tankers?: Tanker[]; fuelLogs?: FuelLog[]; setFuelLogs?: any }> = ({
-  tankers = [],
-  fuelLogs: propsFuelLogs,
-  setFuelLogs: propsSetFuelLogs,
-}) => {
+export const FuelPage: React.FC<{
+  tankers?: Tanker[];
+  fuelLogs?: FuelLog[];
+  onAddFuel?: (log: FuelLog) => void;
+}> = ({ tankers = [], fuelLogs = [], onAddFuel }) => {
   const { showToast } = useNotification();
-
-  const [localFuelLogs, setLocalFuelLogs] = useState<FuelLog[]>([
-    {
-      id: 'FUEL-901',
-      date: '06-08-2026',
-      tankerNumber: 'MH-04-FK-1201',
-      driverName: 'Mahesh Jadhav',
-      litres: 350,
-      ratePerLitre: 92.8,
-      totalAmount: 32480,
-      odometerKm: 142500,
-      fuelStation: 'HPCL Auto Terminal Thane',
-      fullTank: true,
-    },
-    {
-      id: 'FUEL-902',
-      date: '05-08-2026',
-      tankerNumber: 'MH-12-PQ-4590',
-      driverName: 'Santosh Deshmukh',
-      litres: 280,
-      ratePerLitre: 92.8,
-      totalAmount: 25984,
-      odometerKm: 189200,
-      fuelStation: 'IOCL Highway Depot Pune',
-      fullTank: true,
-    },
-    {
-      id: 'FUEL-903',
-      date: '03-08-2026',
-      tankerNumber: 'GJ-06-TR-8812',
-      driverName: 'Vikram Singh',
-      litres: 400,
-      ratePerLitre: 91.5,
-      totalAmount: 36600,
-      odometerKm: 98400,
-      fuelStation: 'BPCL Tanker Fuel Hub Vadodara',
-      fullTank: true,
-    },
-  ]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newLog, setNewLog] = useState<Partial<FuelLog>>({
@@ -127,7 +86,7 @@ export const FuelPage: React.FC<{ tankers?: Tanker[]; fuelLogs?: FuelLog[]; setF
       fullTank: Boolean(newLog.fullTank),
     };
 
-    setFuelLogs([entry, ...fuelLogs]);
+    onAddFuel?.(entry);
     showToast('Fuel Log Saved', `Recorded ${entry.litres}L fuel entry for ${entry.tankerNumber}`);
     setIsModalOpen(false);
   };

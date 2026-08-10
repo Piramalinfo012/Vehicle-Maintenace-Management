@@ -12,12 +12,12 @@ import {
   getTodayDDMMYYYY,
 } from '../utils/dateUtils';
 
-export const BatteryPage: React.FC<{ batteries?: BatteryRecord[]; tankers?: Tanker[] }> = ({
-  batteries: initialBatteries = [],
-  tankers = [],
-}) => {
+export const BatteryPage: React.FC<{
+  batteries?: BatteryRecord[];
+  tankers?: Tanker[];
+  onAddBattery?: (battery: BatteryRecord) => void;
+}> = ({ batteries: batteryData = [], tankers = [], onAddBattery }) => {
   const { showToast } = useNotification();
-  const [batteryData, setBatteryData] = useState<BatteryRecord[]>(initialBatteries || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<BatteryRecord>>({
@@ -81,7 +81,7 @@ export const BatteryPage: React.FC<{ batteries?: BatteryRecord[]; tankers?: Tank
       status: formData.status as any,
     };
 
-    setBatteryData([entry, ...batteryData]);
+    onAddBattery?.(entry);
     showToast('Battery Registered', `Serial #${entry.batteryNumber} registered for ${entry.tankerNumber}`);
     setIsModalOpen(false);
   };

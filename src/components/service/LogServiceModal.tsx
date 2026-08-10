@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal } from '../common/Modal';
 import { Tanker, MaintenanceRecord } from '../../types';
-import { Wrench, Calendar, Gauge, DollarSign, Building2, CheckCircle } from 'lucide-react';
+import { Wrench, Calendar, Gauge, DollarSign, Building2, CheckCircle, Paperclip, Loader2, X } from 'lucide-react';
 import {
   formatToDDMMYYYY,
   formatForDateInput,
@@ -9,6 +9,20 @@ import {
   getTodayDDMMYYYY,
   addMonthsToDDMMYYYY,
 } from '../../utils/dateUtils';
+import { getGoogleSheetsUrl } from '../../services/googleSheetsSync';
+
+// Google Drive folder where service bills/invoices are uploaded via the
+// Apps Script's uploadFile action.
+const BILL_UPLOAD_FOLDER_ID = '1l4vqGTOsjefmSOjoLUubk0d-RyNRF4ez';
+
+function fileToBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split('base64,')[1] || '');
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 interface LogServiceModalProps {
   isOpen: boolean;
@@ -42,6 +56,8 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
   const [complaint, setComplaint] = useState<string>('Routine Periodic Servicing, Oil Change & Filter Replacement');
   const [workDescription, setWorkDescription] = useState<string>('Replaced engine oil, oil filter, air filter, checked brake pads & tire pressure.');
   const [totalCost, setTotalCost] = useState<number>(12500);
+  const [billFile, setBillFile] = useState<File | null>(null);
+  const [isUploadingBill, setIsUploadingBill] = useState(false);
 
   // Next Service due state
   const [intervalOption, setIntervalOption] = useState<string>('6_months_10k');
@@ -82,10 +98,34 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const veh = tankers.find((t) => t.tankerNumber === tankerNumber) || selectedVehicle;
     if (!veh) return;
+
+    let invoiceUrl: string | undefined;
+    if (billFile) {
+      setIsUploadingBill(true);
+      try {
+        const base64Data = await fileToBase64(billFile);
+        const res = await fetch(getGoogleSheetsUrl(), {
+          method: 'POST',
+          body: new URLSearchParams({
+            action: 'uploadFile',
+            base64Data,
+            fileName: billFile.name,
+            mimeType: billFile.type || 'application/octet-stream',
+            folderId: BILL_UPLOAD_FOLDER_ID,
+          }),
+        });
+        const result = await res.json();
+        if (result.success) invoiceUrl = result.fileUrl;
+      } catch (err) {
+        console.error('Failed to upload service bill:', err);
+      } finally {
+        setIsUploadingBill(false);
+      }
+    }
 
     const formattedServiceDate = formatToDDMMYYYY(serviceDate);
     const formattedNextDueDate = formatToDDMMYYYY(nextDueDate);
@@ -110,6 +150,7 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
       remarks: `Next Service due on ${formattedNextDueDate} or at ${nextDueKm?.toLocaleString()} KM.`,
       nextServiceDueDate: formattedNextDueDate,
       nextServiceDueKm: Number(nextDueKm),
+      invoiceUrl,
     };
 
     onSaveService(maintenanceRecord, {
@@ -156,14 +197,13 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
               <Calendar className="w-3.5 h-3.5 text-blue-500" />
-              Service Completion Date *
+              Service Completion Date
             </label>
             <input
               type="date"
               value={formatForDateInput(serviceDate)}
               onChange={(e) => setServiceDate(formatFromDateInput(e.target.value))}
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
-              required
             />
           </div>
         </div>
@@ -205,7 +245,7 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
               <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
-              Total Service Cost (₹) *
+              Total Service Cost (₹)
             </label>
             <input
               type="number"
@@ -213,7 +253,6 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
               onChange={(e) => setTotalCost(Number(e.target.value))}
               placeholder="e.g. 15000"
               className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white font-mono font-bold text-emerald-600"
-              required
             />
           </div>
         </div>
@@ -260,6 +299,33 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
             placeholder="Engine synthetic oil change, OEM air filter, cabin AC filter, wheel alignment..."
             className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1 flex items-center gap-1">
+            <Paperclip className="w-3.5 h-3.5 text-slate-500" />
+            Upload Service Bill / Invoice
+          </label>
+          {billFile ? (
+            <div className="flex items-center justify-between px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white">
+              <span className="truncate">{billFile.name}</span>
+              <button
+                type="button"
+                onClick={() => setBillFile(null)}
+                className="ml-2 p-1 text-slate-500 hover:text-rose-600 rounded"
+                title="Remove selected file"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          ) : (
+            <input
+              type="file"
+              accept="image/*,application/pdf"
+              onChange={(e) => setBillFile(e.target.files?.[0] || null)}
+              className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white file:mr-3 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-[#1E3A8A] dark:file:bg-blue-950 dark:file:text-blue-300"
+            />
+          )}
         </div>
 
         {/* NEXT SERVICE SCHEDULE CONFIGURATOR */}
@@ -358,10 +424,20 @@ export const LogServiceModal: React.FC<LogServiceModalProps> = ({
           </button>
           <button
             type="submit"
-            className="px-5 py-2 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-blue-800 rounded-xl shadow-md transition-all flex items-center gap-1.5"
+            disabled={isUploadingBill}
+            className="px-5 py-2 text-xs font-bold text-white bg-[#1E3A8A] hover:bg-blue-800 rounded-xl shadow-md transition-all flex items-center gap-1.5 disabled:opacity-60"
           >
-            <CheckCircle className="w-4 h-4" />
-            Save & Update Service Log
+            {isUploadingBill ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Uploading Bill...
+              </>
+            ) : (
+              <>
+                <CheckCircle className="w-4 h-4" />
+                Save & Update Service Log
+              </>
+            )}
           </button>
         </div>
       </form>

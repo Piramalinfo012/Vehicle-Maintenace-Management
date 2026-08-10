@@ -12,12 +12,12 @@ import {
   getTodayDDMMYYYY,
 } from '../utils/dateUtils';
 
-export const TyresPage: React.FC<{ tyres?: TyreRecord[]; tankers?: Tanker[] }> = ({
-  tyres: initialTyres = [],
-  tankers = [],
-}) => {
+export const TyresPage: React.FC<{
+  tyres?: TyreRecord[];
+  tankers?: Tanker[];
+  onAddTyre?: (tyre: TyreRecord) => void;
+}> = ({ tyres: tyresData = [], tankers = [], onAddTyre }) => {
   const { showToast } = useNotification();
-  const [tyresData, setTyresData] = useState<TyreRecord[]>(initialTyres || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<TyreRecord>>({
@@ -91,7 +91,7 @@ export const TyresPage: React.FC<{ tyres?: TyreRecord[]; tankers?: Tanker[] }> =
       status: formData.status as any,
     };
 
-    setTyresData([entry, ...tyresData]);
+    onAddTyre?.(entry);
     showToast('Tyre Registered', `Serial #${entry.tyreNumber} assigned to ${entry.tankerNumber}`);
     setIsModalOpen(false);
   };

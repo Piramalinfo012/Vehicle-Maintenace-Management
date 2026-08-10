@@ -41,12 +41,14 @@ export const GoogleAppsScriptPage: React.FC = () => {
           <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950 text-[#1E3A8A] dark:text-blue-300 font-black text-xs flex items-center justify-center">
             01
           </div>
-          <h4 className="font-bold text-xs text-slate-900 dark:text-white">Create Google Sheet Master</h4>
+          <h4 className="font-bold text-xs text-slate-900 dark:text-white">Sheet Tabs Currently Connected</h4>
           <p className="text-[11px] text-slate-500">
-            Create tabs named <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">TankerMaster</code>,{' '}
+            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Users</code>,{' '}
+            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Vehicle Master</code>,{' '}
             <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Maintenance</code>,{' '}
-            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">UserMaster</code>, and{' '}
-            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">FuelLogs</code>.
+            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Expenses</code>, and{' '}
+            <code className="font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded">Breakdown</code>. Add matching tabs
+            (with a header row) for Fuel, Tyres, Battery, Insurance, Fitness, Permit, or PUC to bring those modules live too.
           </p>
         </div>
 

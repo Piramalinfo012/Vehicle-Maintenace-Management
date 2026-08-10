@@ -14,12 +14,11 @@ interface BreakdownPageProps {
 }
 
 export const BreakdownPage: React.FC<BreakdownPageProps> = ({
-  breakdowns: initialBreakdowns = [],
+  breakdowns: breakdownList = [],
   tankers = [],
   onReportBreakdown,
 }) => {
   const { showToast } = useNotification();
-  const [breakdownList, setBreakdownList] = useState<BreakdownRecord[]>(initialBreakdowns || []);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<BreakdownRecord>>({
@@ -105,8 +104,7 @@ export const BreakdownPage: React.FC<BreakdownPageProps> = ({
       status: 'Reported',
     };
 
-    setBreakdownList([incident, ...breakdownList]);
-    onReportBreakdown(incident);
+    onReportBreakdown?.(incident);
     showToast('Breakdown Alert Raised', `Emergency ticket ${incident.id} created for ${incident.tankerNumber}`, 'danger');
     setIsModalOpen(false);
   };

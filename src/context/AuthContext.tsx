@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole, RolePermission } from '../types';
-import { initialUsers, initialRolePermissions } from '../data/initialData';
-import { api } from '../services/api';
+import React, { createContext, useContext, useState } from 'react';
+import { User, RolePermission } from '../types';
+import { initialRolePermissions } from '../data/initialData';
+import { loginWithSheet } from '../services/googleSheetsApi';
 
 interface AuthContextType {
   user: User | null;
@@ -9,9 +9,8 @@ interface AuthContextType {
   rolePermissions: RolePermission | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  login: (loginId: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  switchRoleDemo: (role: UserRole) => void;
   hasPermission: (permissionKey: keyof RolePermission) => boolean;
 }
 
@@ -20,39 +19,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('tanker_user');
-    return saved ? JSON.parse(saved) : initialUsers[0]; // default to Admin for rich preview
+    return saved ? JSON.parse(saved) : null;
   });
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('tanker_token') || 'demo_jwt_token_2026');
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('tanker_token'));
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const rolePermissions = user ? initialRolePermissions.find((p) => p.role === user.role) || null : null;
 
-  const login = async (email: string, password?: string) => {
+  const login = async (loginId: string, password?: string) => {
     setIsLoading(true);
-    try {
-      const data = await api.login({ email, password });
-      setUser(data.user);
-      setToken(data.token);
-      localStorage.setItem('tanker_user', JSON.stringify(data.user));
-      localStorage.setItem('tanker_token', data.token);
-      setIsLoading(false);
+    const result = await loginWithSheet(loginId, password || '');
+    setIsLoading(false);
+
+    if (result.success && result.user) {
+      const sessionToken = `sheet_session_${Date.now()}`;
+      setUser(result.user);
+      setToken(sessionToken);
+      localStorage.setItem('tanker_user', JSON.stringify(result.user));
+      localStorage.setItem('tanker_token', sessionToken);
       return { success: true };
-    } catch (err: any) {
-      setIsLoading(false);
-      // Fallback demo match if server fails or offline
-      const found = initialUsers.find((u) => u.email.toLowerCase() === email.toLowerCase());
-      if (found) {
-        setUser(found);
-        setToken('demo_jwt_token_2026');
-        localStorage.setItem('tanker_user', JSON.stringify(found));
-        localStorage.setItem('tanker_token', 'demo_jwt_token_2026');
-        return { success: true };
-      }
-      return {
-        success: false,
-        error: err.response?.data?.error || 'Invalid credentials or user not registered in Sheet Master.',
-      };
     }
+
+    return { success: false, error: result.error || 'Invalid credentials or user not registered in Sheet Master.' };
   };
 
   const logout = () => {
@@ -60,20 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setToken(null);
     localStorage.removeItem('tanker_user');
     localStorage.removeItem('tanker_token');
-  };
-
-  const switchRoleDemo = (role: UserRole) => {
-    const demo = initialUsers.find((u) => u.role === role) || {
-      id: `USR-DEMO-${role}`,
-      name: `Demo ${role}`,
-      email: `${role.toLowerCase().replace(/\s+/g, '')}@piramalpetroleum.com`,
-      role,
-      phone: '+91 98000 00000',
-      department: 'Operations',
-      status: 'Active',
-    };
-    setUser(demo);
-    localStorage.setItem('tanker_user', JSON.stringify(demo));
   };
 
   const hasPermission = (permissionKey: keyof RolePermission): boolean => {
@@ -91,7 +65,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         logout,
-        switchRoleDemo,
         hasPermission,
       }}
     >
