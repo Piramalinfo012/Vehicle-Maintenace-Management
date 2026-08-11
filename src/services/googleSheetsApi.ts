@@ -11,6 +11,7 @@ export const SHEET_NAMES = {
   maintenance: 'Maintenance',
   expenses: 'Expenses',
   breakdown: 'Breakdown',
+  documents: 'Documents',
 } as const;
 
 // Exact column order of each sheet tab - insert/update payloads must match

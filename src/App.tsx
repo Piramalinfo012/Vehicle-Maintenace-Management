@@ -85,15 +85,16 @@ const MainLayout: React.FC = () => {
     fetchAllSheets().then((results) => {
       if (cancelled) return;
 
-      // Only Users, Vehicle Master (Tankers), Maintenance, Expenses and
-      // Breakdown have tabs in the connected sheet today. Fuel/Tyres/Battery/
-      // Insurance/Fitness/Permit/PUC/Documents have no backing tab yet, so
-      // those modules stay local-only until matching tabs are added.
+      // Only Users, Vehicle Master (Tankers), Maintenance, Expenses,
+      // Breakdown and Documents have tabs in the connected sheet today.
+      // Fuel/Tyres/Battery/Insurance/Fitness/Permit/PUC have no backing tab
+      // yet, so those modules stay local-only until matching tabs are added.
       setTankers(results.tankers.data);
       setMaintenance(results.maintenance.data);
       setExpenses(results.expenses.data);
       setBreakdowns(results.breakdown.data);
       setUsers(results.users.data);
+      setDocuments(results.documents.data);
 
       const errors = Object.values(results)
         .filter((r) => r.error)
@@ -257,6 +258,22 @@ const MainLayout: React.FC = () => {
     logActivity('CREATE', 'Users', `Provisioned user account for ${newUser.name}`);
   };
 
+  // Document renewal reminders, derived live from the Documents sheet -
+  // alerts fire starting 3 days before the document's renewal date.
+  const DOC_VEHICLE_REGEX = /^([A-Z]{2})\s?(\d{1,2})\s?([A-Z]{1,3})\s?(\d{1,4})/i;
+  const daysUntilDate = (dateStr: string): number => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return Infinity;
+    return Math.ceil((d.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+  };
+  const formatDocDateIST = (dateStr: string): string => {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d
+      .toLocaleDateString('en-GB', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric' })
+      .replace(/\//g, '-');
+  };
+
   // Reminders Generation (derived live from compliance data)
   const reminders: Reminder[] = [
     ...insurances
@@ -279,6 +296,24 @@ const MainLayout: React.FC = () => {
         daysRemaining: 2,
         severity: 'High' as const,
       })),
+    ...documents
+      .filter((doc) => doc['Delete'] !== 'DELETED' && doc['Need Renewal'] === 'Yes' && doc['Renewal Date'])
+      .map((doc) => {
+        const match = String(doc['Documne name'] || '').match(DOC_VEHICLE_REGEX);
+        const tankerNumber = match
+          ? `${match[1].toUpperCase()}-${match[2]}-${match[3].toUpperCase()}-${match[4]}`
+          : doc['Documne name'] || 'Unknown';
+        const daysRemaining = daysUntilDate(doc['Renewal Date']);
+        return {
+          id: `REM-DOC-${doc['Serial No']}`,
+          tankerNumber,
+          category: doc['Category'] || 'Document Renewal',
+          dueDate: formatDocDateIST(doc['Renewal Date']),
+          daysRemaining,
+          severity: daysRemaining <= 0 ? ('High' as const) : ('Medium' as const),
+        };
+      })
+      .filter((r) => r.daysRemaining <= 3),
   ];
 
   // Notifications Generation (derived live from compliance data, replaces mock feed)
